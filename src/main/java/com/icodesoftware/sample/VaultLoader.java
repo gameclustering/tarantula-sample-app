@@ -48,7 +48,7 @@ public class VaultLoader {
     }
 
     private static void loadSql(HttpClient client, String vaultHost, String vaultToken, String prefix) throws Exception {
-        JsonNode data = kvGet(client, vaultHost, vaultToken, prefix + "/presence", "sql");
+        JsonNode data = kvGet(client, vaultHost, vaultToken, prefix + "/presence", "postgresql");
         String user  = text(data, "user");
         String pwd   = text(data, "password");
         String host  = text(data, "host");
@@ -87,9 +87,10 @@ public class VaultLoader {
 
         if (port.isEmpty()) port = "6379";
         if (!host.isEmpty()) {
-            System.setProperty("REDIS_HOST",     host);
-            System.setProperty("REDIS_PORT",     port);
+            // Redis cluster: provide seed node; Lettuce auto-discovers the rest
+            System.setProperty("spring.data.redis.cluster.nodes", host + ":" + port);
             System.setProperty("REDIS_PASSWORD", pwd);
+            System.setProperty("redis.available", "true");
             System.out.println("[VaultLoader] redis configured host=" + host);
         }
     }
